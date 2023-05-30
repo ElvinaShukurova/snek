@@ -6,19 +6,17 @@ const val MINIMUM_GAME_SPEED = 200L
 object SnakeCore {
     var nextMove: () -> Unit = {}
     var isPlay = true
-    private val thread: Thread
     var gameSpeed = START_GAME_SPEED
 
     init {
-        thread = Thread(Runnable {
+        Thread {
             while (true) {
                 Thread.sleep(gameSpeed)
                 if (isPlay) {
                     nextMove()
                 }
             }
-        })
-        thread.start()
+        }.start()
     }
 
     fun startTheGame() {
@@ -26,3 +24,4 @@ object SnakeCore {
         isPlay = true
     }
 }
+

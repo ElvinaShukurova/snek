@@ -9,23 +9,25 @@
 
     <FrameLayout
         android:id="@+id/container"
-        android:background="@android:color/darker_gray"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="vertical"/>
+        android:background="#0B3A36"
+        android:orientation="vertical">
+
+    </FrameLayout>
 
     <RelativeLayout
         android:id="@+id/buttons"
-        android:layout_width="150dp"
-        android:layout_height="151dp">
+        android:layout_width="match_parent"
+        android:layout_height="150dp">
 
         <ImageView
             android:id="@+id/ivArrowUp"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="53dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="52dp"
             android:src="@drawable/baseline_arrow_up"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -35,11 +37,11 @@
             android:id="@+id/ivArrowRight"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginEnd="0dp"
-            android:layout_marginBottom="55dp"
+            android:layout_marginStart="102dp"
 
+            android:layout_marginBottom="49dp"
             android:rotation="90"
             android:src="@drawable/baseline_arrow_up"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -50,10 +52,10 @@
             android:id="@+id/ivArrowBottom"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginEnd="53dp"
-            android:layout_marginBottom="5dp"
+            android:layout_marginStart="52dp"
+            android:layout_marginBottom="-2dp"
             android:rotation="180"
             android:src="@drawable/baseline_arrow_up"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -65,13 +67,13 @@
             android:id="@+id/ivArrowLeft"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginTop="47dp"
 
-            android:layout_marginEnd="103dp"
-            android:layout_marginBottom="54dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="51dp"
+            android:layout_marginBottom="50dp"
             android:rotation="270"
             android:src="@drawable/baseline_arrow_up"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -83,16 +85,44 @@
             android:id="@+id/ivPause"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginEnd="52dp"
 
-            android:layout_marginBottom="55dp"
+            android:layout_marginStart="52dp"
+            android:layout_marginBottom="49dp"
             android:src="@drawable/baseline_pause"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             tools:layout_editor_absoluteX="50dp"
             tools:layout_editor_absoluteY="50dp" />
+
+        <TextView
+            android:id="@+id/score"
+            android:layout_width="186dp"
+            android:layout_height="45dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="27dp"
+            android:layout_marginBottom="91dp"
+            android:background="#FFC107"
+            android:gravity="center_vertical"
+            android:text=" SCORE: 0"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/best"
+            android:layout_width="186dp"
+            android:layout_height="44dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="27dp"
+            android:layout_marginBottom="16dp"
+            android:background="#FFC107"
+            android:gravity="center_vertical"
+            android:text=" BEST: 0"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
     </RelativeLayout>
 

@@ -1,8 +1,7 @@
 package com.example.myapplication
 
 import android.widget.ImageView
-
-data class PartOfTale(
-    val viewCoordinate: ViewCoordinate,
+data class PartOfTail(
+    val coordinate: Coordinate,
     val imageView: ImageView
 )

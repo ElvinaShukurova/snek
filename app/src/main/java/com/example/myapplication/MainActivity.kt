@@ -4,35 +4,42 @@ import android.os.Bundle
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.SnakeCore.gameSpeed
 import com.example.myapplication.SnakeCore.isPlay
 import com.example.myapplication.SnakeCore.startTheGame
+import java.io.File
 import kotlin.math.ceil
+import kotlin.random.Random
+
+private var bestScore = 0
 
 class MainActivity : AppCompatActivity() {
 
-    private val allTale = mutableListOf<PartOfTale>()
+    private val allTail = mutableListOf<PartOfTail>()
     private var currentDirection: Directions = Directions.BOTTOM
     private var HEAD_SIZE = -1
     private val CELLS_ON_FIELD_HORIZONTALLY = 11
     private val CELLS_ON_FIELD_VERTICALLY = 16
+    private lateinit var bestScoreFile: File
+    private val wallsCoordinate = mutableSetOf<Coordinate>()
+    private lateinit var container: FrameLayout
 
-    private val human by lazy {
+    private val heart by lazy {
         ImageView(this).apply {
             this.layoutParams = FrameLayout.LayoutParams(HEAD_SIZE, HEAD_SIZE)
-            this.setImageResource(R.drawable.baseline_person)
+            this.setImageResource(R.drawable.heart)
         }
     }
+
     private val head by lazy {
-        ImageView(this)
-            .apply {
-                this.layoutParams = FrameLayout.LayoutParams(HEAD_SIZE, HEAD_SIZE)
-                this.setImageResource(R.drawable.snake_head)
-            }
+        ImageView(this).apply {
+            this.layoutParams = FrameLayout.LayoutParams(HEAD_SIZE, HEAD_SIZE)
+            this.setImageResource(R.drawable.snake_head)
+        }
     }
-    private lateinit var container: FrameLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,10 +63,16 @@ class MainActivity : AppCompatActivity() {
         val ivArrowRight = findViewById<ImageView>(R.id.ivArrowRight)
         val ivArrowLeft = findViewById<ImageView>(R.id.ivArrowLeft)
         val ivPause = findViewById<ImageView>(R.id.ivPause)
+        val best = findViewById<TextView>(R.id.best)
+
+        bestScoreFile = File(applicationContext.filesDir, "bestScore")
+        if (bestScoreFile.createNewFile()) bestScoreFile.writeText(bestScore.toString())
+        bestScore = bestScoreFile.readText().toInt()
+        best.text = " BEST: $bestScore"
 
 
         startTheGame()
-        generateNewHuman()
+        generateNewHeart()
         SnakeCore.nextMove = { move(Directions.BOTTOM) }
 
 
@@ -77,10 +90,10 @@ class MainActivity : AppCompatActivity() {
             SnakeCore.nextMove = { checkIfCurrentDirectionIsNotOpposite(Directions.RIGHT, Directions.LEFT) }
         }
         ivPause.setOnClickListener {
-            if (isPlay) {
-                ivPause.setImageResource(R.drawable.baseline_play)
-            } else {
+            if (!isPlay) {
                 ivPause.setImageResource(R.drawable.baseline_pause)
+            } else {
+                ivPause.setImageResource(R.drawable.baseline_play)
             }
             isPlay = !isPlay
         }
@@ -94,35 +107,48 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun generateNewHuman() {
-        val viewCoordinate = generateHumanCoordinates()
-        (human.layoutParams as FrameLayout.LayoutParams).topMargin = viewCoordinate.top
-        (human.layoutParams as FrameLayout.LayoutParams).leftMargin = viewCoordinate.left
-        container.removeView(human)
-        container.addView(human)
+    private fun generateNewHeart() {
+        val viewCoordinate = generateHeartCoordinates()
+        (heart.layoutParams as FrameLayout.LayoutParams).topMargin = viewCoordinate.top
+        (heart.layoutParams as FrameLayout.LayoutParams).leftMargin = viewCoordinate.left
+        container.removeView(heart)
+        container.addView(heart)
     }
 
-    private fun generateHumanCoordinates(): ViewCoordinate {
-        val viewCoordinate = ViewCoordinate(
+    private fun generateHeartCoordinates(): Coordinate {
+        val coordinate = Coordinate(
             (0 until CELLS_ON_FIELD_VERTICALLY).random() * HEAD_SIZE,
             (0 until CELLS_ON_FIELD_HORIZONTALLY).random() * HEAD_SIZE
         )
-        for (partTale in allTale) {
-            if (partTale.viewCoordinate == viewCoordinate) {
-                return generateHumanCoordinates()
+        for (partTail in allTail) {
+            if (partTail.coordinate == coordinate) {
+                return generateHeartCoordinates()
             }
         }
-        if (head.top == viewCoordinate.top && head.left == viewCoordinate.left) {
-            return generateHumanCoordinates()
+        if (coordinate in wallsCoordinate) {
+            return generateHeartCoordinates()
         }
-        return viewCoordinate
+        if (head.top == coordinate.top && head.left == coordinate.left) {
+            return generateHeartCoordinates()
+        }
+        return coordinate
     }
 
-    private fun checkIfSnakeEatsPerson() {
-        if (head.left == human.left && head.top == human.top) {
-            generateNewHuman()
-            addPartOfTale(head.top, head.left)
+    private fun checkIfSnakeEatsHeart() {
+        if (head.left == heart.left && head.top == heart.top) {
+            addPartOfTail(head.top, head.left)
             increaseDifficult()
+            generateNewHeart()
+            val score = findViewById<TextView>(R.id.score)
+            val best = findViewById<TextView>(R.id.best)
+            score.text = " SCORE: ${allTail.size}"
+            if (bestScore < allTail.size) {
+                bestScore = allTail.size
+                best.text = " BEST: $bestScore"
+                bestScoreFile.writeText(bestScore.toString())
+            }
+
+
         }
     }
 
@@ -130,25 +156,42 @@ class MainActivity : AppCompatActivity() {
         if (gameSpeed <= MINIMUM_GAME_SPEED) {
             return
         }
-        if (allTale.size % 5 == 0) {
+        if (allTail.size % 5 == 0) {
             gameSpeed -= 100
+        }
+        val left = Random.nextInt(CELLS_ON_FIELD_HORIZONTALLY) * HEAD_SIZE
+        val top = Random.nextInt(CELLS_ON_FIELD_VERTICALLY) * HEAD_SIZE
+        var f = true
+        for (tailPart in allTail) {
+            if (tailPart.coordinate.top == top
+                && tailPart.coordinate.left == left
+            ) f = false
+        }
+        if (f) {
+            wallsCoordinate.add(Coordinate(top, left))
+            container.addView(ImageView(this).apply {
+                this.layoutParams = FrameLayout.LayoutParams(HEAD_SIZE, HEAD_SIZE)
+                this.y = top.toFloat()
+                this.x = left.toFloat()
+                this.setImageResource(R.drawable.mushroom)
+            })
         }
     }
 
-    private fun addPartOfTale(top: Int, left: Int) {
-        val talePart = drawPartOfTale(top, left)
-        allTale.add(PartOfTale(ViewCoordinate(top, left), talePart))
+    private fun addPartOfTail(top: Int, left: Int) {
+        val tailPart = drawPartOfTail(top, left)
+        allTail.add(PartOfTail(Coordinate(top, left), tailPart))
     }
 
-    private fun drawPartOfTale(top: Int, left: Int): ImageView {
-        val taleImage = ImageView(this)
-        taleImage.setImageResource(R.drawable.snake_scales)
-        taleImage.layoutParams = FrameLayout.LayoutParams(HEAD_SIZE, HEAD_SIZE)
-        (taleImage.layoutParams as FrameLayout.LayoutParams).topMargin = top
-        (taleImage.layoutParams as FrameLayout.LayoutParams).leftMargin = left
+    private fun drawPartOfTail(top: Int, left: Int): ImageView {
+        val tailImage = ImageView(this)
+        tailImage.setImageResource(R.drawable.snake_scales)
+        tailImage.layoutParams = FrameLayout.LayoutParams(HEAD_SIZE, HEAD_SIZE)
+        (tailImage.layoutParams as FrameLayout.LayoutParams).topMargin = top
+        (tailImage.layoutParams as FrameLayout.LayoutParams).leftMargin = left
 
-        container.addView(taleImage)
-        return taleImage
+        container.addView(tailImage)
+        return tailImage
     }
 
     private fun move(direction: Directions) {
@@ -172,8 +215,8 @@ class MainActivity : AppCompatActivity() {
                 showScore()
                 return@runOnUiThread
             }
-            makeTaleMove()
-            checkIfSnakeEatsPerson()
+            makeTailMove()
+            checkIfSnakeEatsHeart()
             container.removeView(head)
             container.addView(head)
         }
@@ -194,7 +237,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showScore() {
         AlertDialog.Builder(this)
-            .setTitle("Your score: ${allTale.size} items LOSER")
+            .setTitle("Your score: ${allTail.size} items. For a better result, give Elvina a good grade")
             .setPositiveButton("OK") { _, _ ->
                 this.recreate()
             }
@@ -204,8 +247,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkIfSnekDed(): Boolean {
-        for (talePart in allTale) {
-            if (talePart.viewCoordinate.left == head.left && talePart.viewCoordinate.top == head.top) {
+        for (tailPart in allTail) {
+            if (tailPart.coordinate.left == head.left && tailPart.coordinate.top == head.top) {
                 return true
             }
         }
@@ -213,41 +256,31 @@ class MainActivity : AppCompatActivity() {
             || head.left < 0
             || head.top >= HEAD_SIZE * CELLS_ON_FIELD_VERTICALLY
             || head.left >= HEAD_SIZE * CELLS_ON_FIELD_HORIZONTALLY
+            || Coordinate(head.top, head.left) in wallsCoordinate
         ) {
             return true
         }
         return false
     }
 
-    private fun makeTaleMove() {
-        var tempTalePart: PartOfTale? = null
-        for (index in 0 until allTale.size) {
-            val talePart = allTale[index]
-            container.removeView(talePart.imageView)
+    private fun makeTailMove() {
+        var tempTailPart: PartOfTail? = null
+
+        for (index in 0 until allTail.size) {
+            val tailPart = allTail[index]
+            container.removeView(tailPart.imageView)
             if (index == 0) {
-                tempTalePart = talePart
-                allTale[index] = PartOfTale(ViewCoordinate(head.top, head.left), drawPartOfTale(head.top, head.left))
+                tempTailPart = tailPart
+                allTail[index] = PartOfTail(Coordinate(head.top, head.left), drawPartOfTail(head.top, head.left))
             } else {
-                val anotherTempPartOfTale = allTale[index]
-                tempTalePart?.let {
-                    allTale[index] =
-                        PartOfTale(it.viewCoordinate, drawPartOfTale(it.viewCoordinate.top, it.viewCoordinate.left))
+                val anotherTempPartOfTail = allTail[index]
+                tempTailPart?.let {
+                    allTail[index] =
+                        PartOfTail(it.coordinate, drawPartOfTail(it.coordinate.top, it.coordinate.left))
                 }
-                tempTalePart = anotherTempPartOfTale
+                tempTailPart = anotherTempPartOfTail
             }
         }
     }
 }
 
-enum class Directions {
-    UP,
-    RIGHT,
-    BOTTOM,
-    LEFT
-}
-
-
-data class ViewCoordinate(
-    val top: Int,
-    val left: Int
-    )
